@@ -44,6 +44,10 @@ class App extends React.Component {
     facecovervalue: false,
     hasfacemask: false,
     isoneperson: false,
+    facecovervalue2: false,
+    hasfacemask2: false,
+    isoneperson2: false,
+    
   };
   
   
@@ -62,17 +66,22 @@ class App extends React.Component {
       // on reader load somthing...
       reader.onload = () => {
         // Make a fileInfo Object
-        console.log("Called", reader);
+
         baseURL = reader.result;
-        console.log(baseURL);
+        
         resolve(baseURL);
       };
-      console.log(fileInfo);
+      
     });
   };
 
   handleFileInputChange = e => {
-    console.log(e.target.files[0]);
+   
+    this.setState({
+      facecovervalue2: false,
+      hasfacemask2: false,
+      isoneperson2: false,
+     })
     let { file } = this.state;
 
     file = e.target.files[0];
@@ -80,14 +89,14 @@ class App extends React.Component {
     this.getBase64(file)
       .then(result => {
         file["base64"] = result;
-        console.log("File Is", file);
+        
         this.setState({
           base64URL: result,
           file
         });
       })
       .catch(err => {
-        console.log(err);
+        
       });
 
     this.setState({
@@ -99,6 +108,7 @@ class App extends React.Component {
 
   
     async fileUpload(){
+     
        const response= await fetch ('https://qphljk3c2j.execute-api.us-east-1.amazonaws.com/production/detectsecitem',{
            method :"POST",
            headers : {
@@ -108,17 +118,26 @@ class App extends React.Component {
            body :JSON.stringify({ photo: this.state.base64URL})
        })
        const Result= await response.json();
-       console.log(Result)
+       
 
        const details = JSON.parse(Result.body)
-       console.log(details.FaceCoverRecon)
+       
        
        try {
+         this.setState({
+          facecovervalue: false,
+          hasfacemask: false,
+          isoneperson: false,
+          facecovervalue2: true,
+          hasfacemask2: true,
+          isoneperson2: true,
+         })
          if(details.FaceCoverRecon.length===0){
-          this.setState({hasmaskvalue:false})
+          this.setState({hasfacemask:false})
+          this.setState({isoneperson2:false})
          }else if(details.FaceCoverRecon.length===1){
           this.setState({isoneperson:true})
-          this.setState({hasmaskvalue:true})
+          this.setState({hasfacemask:true})
           if (details.FaceCoverRecon[0].CoversBodyPartValue) {
             this.setState({facecovervalue:true})
           
@@ -127,6 +146,8 @@ class App extends React.Component {
             
           }
          }else{
+          this.setState({facecovervalue2:false})
+          this.setState({hasfacemask2:false})
           this.setState({isoneperson:false})
          }
            
@@ -175,7 +196,7 @@ class App extends React.Component {
   
   render() {
     return (
-      <div
+      <div  className ={useStyles.root}
       style={{ justifyContent: "center", alignItems: "center", margin: "8px" }}
     >
       <Grid m={4} container justify="center" direction="column">
@@ -218,7 +239,7 @@ class App extends React.Component {
                 >
                   <Typography className={useStyles.text} spacing={0}>
                     <p>
-                      <b style={{ fontSize: 24 }}> Plataforma para disminuir los casos de covid-19 en las empresas a partir de la detección del buen uso del tapabocas al ingreso</b>
+                      <b style={{ fontSize: 24 , justify: "center"}}> Plataforma para disminuir los casos de covid-19 en las empresas a partir de la detección del buen uso del tapabocas</b>
                     </p>
                   </Typography>
                   <Box className={useStyles.circle} style={{ marginLeft: 20 }}>
@@ -238,35 +259,40 @@ class App extends React.Component {
               <br></br>
               <br></br>
               <br></br>
-            <Typography variant="h2" className={useStyles.text_blue}>
-              <b>Ingresa tu foto de ingreso</b>
-            </Typography>
+            
             
           </Grid>
-         
+          <Typography variant="h4" alignCenter className={useStyles.text_blue}>
+              <b>Ingresa tu foto de ingreso</b>
+            </Typography>
+            <br></br>
           <Button
                      containerElement='label' // <-- Just add me!
                       label='My Label' color="primary" variant="contained">
                       
                       <input type="file" name="file" onChange={this.handleFileInputChange} />
           </Button>
+          <br></br>
           <div className= "col-6 offset-3">
         
               <img src={this.state.base64URL} width="50%"/>
               </div>
               <h2>{this.state.files}</h2>
               <Button color="primary"  variant="contained" onClick={this.fileUpload}>Verificar imagen</Button>
-              <Typography variant="body1" style={{ paddingRight: 100 }}>
-              <p>
-                <b>Recomendaciones:</b>{" "}
-              </p>
-              <ul className={useStyles.ul}>
-                
-              </ul>
+              <Typography variant="body1" style={{ paddingRight: 100 }} >
+             
+             
             </Typography>
-            <Alert severity="info">{this.state.hasmaskvalue ? "Tienes tapabocas" : "No tienes tapabocas ponte uno para poder ingresar" }</Alert>
-            <Alert severity="info">{this.state.facecovervalue ? "Tu ingreso ha sido validado tiene el tapabocas bien puesto" : "Invalido tienes el tapabocas mal ubicado" }</Alert>
-            <Alert severity="info">{this.state.isoneperson ? "" : "Al parecer hay más de una personas en la foto" }</Alert>
+            <br></br>
+            <p>
+                <b>Resultados:</b>{" "}
+              </p>
+            <div className={useStyles.alerts}>
+             
+              <Alert severity={this.state.hasfacemask ? "success": "error"}>{this.state.hasfacemask2 ? (this.state.hasfacemask ? "Estás usando el tapabocas." : "No estás haciendo uso de tapabocas, ponte uno para poder continuar con tus labores"):"" }</Alert> 
+              <Alert severity={this.state.facecovervalue? "success": "warning"}>{this.state.facecovervalue2 ? (this.state.facecovervalue ? "Admitido, se detecta un uso correcto del tapabocas" : "No admitido, asegurate de usar correctamente tu tapabocas"):"" }</Alert> 
+              <Alert severity="info">{this.state.isoneperson2 ? (this.state.isoneperson ? "Todo está bien, puedes seguir con tus labores":"Al parecer hay más de una persona en la imagen"):""}</Alert> 
+            </div>
         </Grid>
       </Grid>
         
@@ -283,6 +309,7 @@ const useStyles = makeStyles((theme) => ({
   root: {
     backgroundColor: theme.palette.background.default,
     height: "100%",
+    flexGrow: 1,
   },
   grid: {
     height: "100%",
@@ -395,6 +422,16 @@ const useStyles = makeStyles((theme) => ({
     width: 500,
     height: 450,
   },
+  alerts: {
+    width: '100%',
+    '& > * + *': {
+      marginTop: theme.spacing(2),
+    },
+  },
+  typography: {
+    flexGrow: 1,
+        align: "center"
+      },
 }));
 
 export default App;
