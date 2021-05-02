@@ -143,7 +143,7 @@ class App extends React.Component {
           
           } else {
             this.setState({facecovervalue:false})
-            
+            this.setState({isoneperson2:false})
           }
          }else{
           this.setState({facecovervalue2:false})
