@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Button, Typography, Card, Box,GridList,GridListTile } from "@material-ui/core";
+import { Grid, Button, Typography, Card, Box,GridList,GridListTile,CircularProgress } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import Alert from '@material-ui/lab/Alert';
 import Image1 from './images/img1.png';
@@ -11,6 +11,11 @@ import Image4 from './images/img4.jpg';
 
 
 class App extends React.Component {
+
+  componentDidMount(){
+    document.title = "Companies BioSec"
+  }
+
   state = {
     file: null,
     base64URL: "",
@@ -47,6 +52,7 @@ class App extends React.Component {
     facecovervalue2: false,
     hasfacemask2: false,
     isoneperson2: false,
+    verifyclic: false,
     
   };
   
@@ -81,6 +87,8 @@ class App extends React.Component {
       facecovervalue2: false,
       hasfacemask2: false,
       isoneperson2: false,
+      base64URL: "",
+      verifyclic: false,
      })
     let { file } = this.state;
 
@@ -109,6 +117,9 @@ class App extends React.Component {
   
     async fileUpload(){
      
+      this.setState({
+        verifyclic: true,
+       })
        const response= await fetch ('https://qphljk3c2j.execute-api.us-east-1.amazonaws.com/production/detectsecitem',{
            method :"POST",
            headers : {
@@ -157,42 +168,6 @@ class App extends React.Component {
        
        
     }
-
-    /* facemask = props => {
-      this.state.facecovervalue = props.CoversBodyPartValue
-      let value = this.state.facecovervalue
-      if (value) {
-        return (
-          <li>
-                  <span style={{ color: "black" }}>
-                    Estás usando el tapabocas de manera correcta.
-                  </span>
-                </li>
-                <br></br>
-                <li className={useStyles.li_blue}>
-                  <span style={{ color: "black" }}>
-                    Se detecta un reconocimiento del tapabocas en una seguridad del {props.Confidence}.
-                  </span>
-                </li>
-        )
-      } else {
-        return (
-          <li>
-                  <span style={{ color: "black" }}>
-                    No estás usando el tapabocas de manera correcta. Por favor, acomodarselo de manera adecuada.
-                  </span>
-                </li>
-                <br></br>
-                <li className={useStyles.li_blue}>
-                  <span style={{ color: "black" }}>
-                    Se detecta un reconocimiento del tapabocas en una confidencialidad del {props.Confidence}.
-                  </span>
-                </li>
-        )
-      }
-    }*/
- 
-
   
   render() {
     return (
@@ -234,12 +209,12 @@ class App extends React.Component {
                   direction="column"
                   justify="center"
                   alignItems="flex-start"
-                  style={{ marginLeft: 20 }}
+                  style={{ marginLeft: 20, textAlign: "center"  }}
                   spacing={0}
                 >
                   <Typography className={useStyles.text} spacing={0}>
                     <p>
-                      <b style={{ fontSize: 24 , justify: "center"}}> Plataforma para disminuir los casos de covid-19 en las empresas a partir de la detección del buen uso del tapabocas</b>
+                      <b style={{ fontSize: 24}}> Plataforma para disminuir el contagio de covid-19 en las empresas a partir de la detección del buen uso del tapabocas</b>
                     </p>
                   </Typography>
                   <Box className={useStyles.circle} style={{ marginLeft: 20 }}>
@@ -263,7 +238,7 @@ class App extends React.Component {
             
           </Grid>
           <Typography variant="h4" alignCenter className={useStyles.text_blue}>
-              <b>Ingresa tu foto de ingreso</b>
+              <b>Ingresa la foto</b>
             </Typography>
             <br></br>
           <Button
@@ -288,7 +263,13 @@ class App extends React.Component {
                 <b>Resultados:</b>{" "}
               </p>
             <div className={useStyles.alerts}>
-             
+              {this.state.verifyclic && !this.state.hasfacemask2 && !this.state.facecovervalue2 && !this.state.isoneperson2 && this.state.base64URL !== ""
+                && <Grid container>
+                <Grid item xs={12}>
+                  <br></br>
+                  <CircularProgress />
+                </Grid>
+              </Grid>}
               <Alert severity={this.state.hasfacemask ? "success": "error"}>{this.state.hasfacemask2 ? (this.state.hasfacemask ? "Estás usando el tapabocas." : "No estás haciendo uso de tapabocas, ponte uno para poder continuar con tus labores"):"" }</Alert> 
               <Alert severity={this.state.facecovervalue? "success": "warning"}>{this.state.facecovervalue2 ? (this.state.facecovervalue ? "Admitido, se detecta un uso correcto del tapabocas" : "No admitido, asegurate de usar correctamente tu tapabocas"):"" }</Alert> 
               <Alert severity="info">{this.state.isoneperson2 ? (this.state.isoneperson ? "Todo está bien, puedes seguir con tus labores":"Al parecer hay más de una persona en la imagen"):""}</Alert> 
